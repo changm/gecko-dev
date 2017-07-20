@@ -6,6 +6,7 @@
 #include "SourceSurfaceD2D1.h"
 #include "DrawTargetD2D1.h"
 #include "Tools.h"
+#include "nsAppRunner.h"
 
 namespace mozilla {
 namespace gfx {
@@ -18,7 +19,10 @@ SourceSurfaceD2D1::SourceSurfaceD2D1(ID2D1Image *aImage, ID2D1DeviceContext *aDC
   , mDevice(Factory::GetD2D1Device())
   , mDrawTarget(aDT)
 {
-  aImage->QueryInterface((ID2D1Bitmap1**)getter_AddRefs(mRealizedBitmap));
+  HRESULT hr = aImage->QueryInterface((ID2D1Bitmap1**)getter_AddRefs(mRealizedBitmap));
+  if (FAILED(hr)) {
+    mRealizedBitmap = nullptr;
+  }
 
   mFormat = aFormat;
   mSize = aSize;
@@ -86,7 +90,8 @@ SourceSurfaceD2D1::EnsureRealizedBitmap()
   }
 
   RefPtr<ID2D1DeviceContext> dc;
-  device->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, getter_AddRefs(dc));
+  HRESULT hr = device->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, getter_AddRefs(dc));
+  MOZ_ASSERT(hr == S_OK);
 
   D2D1_BITMAP_PROPERTIES1 props;
   props.dpiX = 96;
@@ -94,13 +99,19 @@ SourceSurfaceD2D1::EnsureRealizedBitmap()
   props.pixelFormat = D2DPixelFormat(mFormat);
   props.colorContext = nullptr;
   props.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
-  dc->CreateBitmap(D2DIntSize(mSize), nullptr, 0, props, (ID2D1Bitmap1**)getter_AddRefs(mRealizedBitmap));
+  mDC->CreateBitmap(D2DIntSize(mSize), nullptr, 0, props, (ID2D1Bitmap1**)getter_AddRefs(mRealizedBitmap));
 
-  dc->SetTarget(mRealizedBitmap);
+  RefPtr<ID2D1Image> oldTarget;
+  mDC->GetTarget(getter_AddRefs(oldTarget));
 
-  dc->BeginDraw();
-  dc->DrawImage(mImage);
-  dc->EndDraw();
+  mDC->SetTarget(mRealizedBitmap);
+
+  mDC->BeginDraw();
+  mDC->DrawImage(mImage);
+  hr = mDC->EndDraw();
+  MOZ_ASSERT(hr == S_OK);
+
+  mDC->SetTarget(oldTarget);
 
   return true;
 }

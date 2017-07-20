@@ -134,12 +134,100 @@ DrawTargetD2D1::IntoLuminanceSource(LuminanceType aLuminanceType, float aOpacity
     return DrawTarget::IntoLuminanceSource(aLuminanceType, aOpacity);
   }
 
+/*
+  RefPtr<ID2D1Effect> inverseGamma;
+  HRESULT hr = mDC->CreateEffect(CLSID_D2D1GammaTransfer,
+                                 getter_AddRefs(inverseGamma));
+  MOZ_ASSERT(hr == S_OK);
+  
+  inverseGamma->SetValue(D2D1_GAMMATRANSFER_PROP_RED_EXPONENT, 1.0 / 2.2);
+  inverseGamma->SetValue(D2D1_GAMMATRANSFER_PROP_GREEN_EXPONENT, 1.0 / 2.2);
+  inverseGamma->SetValue(D2D1_GAMMATRANSFER_PROP_BLUE_EXPONENT, 1.0 / 2.2);
+  inverseGamma->SetInput(0, mBitmap);
+
+  RefPtr<ID2D1Image> inverseGammaImage;
+  inverseGamma->GetOutput(getter_AddRefs(inverseGammaImage));
+  */
+  
+  // Create our luminance output based on inverse gamma.
+  MOZ_ASSERT(NS_IsMainThread());
+  HRESULT hr = mDC->CreateEffect(CLSID_D2D1LuminanceToAlpha,
+                                 getter_AddRefs(mLuminanceEffect));
+  if (FAILED(hr)) {
+    gfxCriticalError() << "Failed to create luminance effect. Code: " << hexa(hr);
+    return nullptr;
+  }
+
   mLuminanceEffect->SetInput(0, mBitmap);
 
   RefPtr<ID2D1Image> luminanceOutput;
   mLuminanceEffect->GetOutput(getter_AddRefs(luminanceOutput));
 
- return MakeAndAddRef<SourceSurfaceD2D1>(luminanceOutput, mDC, SurfaceFormat::A8, mSize);
+  RefPtr<SourceSurface> snapshot = Snapshot();
+  RefPtr<SourceSurface> d2dSurface = MakeAndAddRef<SourceSurfaceD2D1>(luminanceOutput, mDC, SurfaceFormat::A8, mSize, nullptr);
+  RefPtr<SourceSurface> cpuSurface = DrawTarget::IntoLuminanceSource(aLuminanceType, aOpacity);
+
+  if (XRE_IsContentProcess()) {
+    RefPtr<DataSourceSurface> data = snapshot->GetDataSurface();
+    DataSourceSurface::MappedSurface map;
+    data->Map(DataSourceSurface::MapType::READ, &map);
+
+    size_t stride = map.mStride;
+    size_t height = data->GetSize().height;
+    printf_stderr("D2D INput Surface\n");
+    MOZ_ASSERT(mFormat != SurfaceFormat::A8);
+    printf_stderr("Height is: %d, width: %d\n", height, data->GetSize().width);
+
+    for (uint32_t i = 0; i < height; i++) {
+      uint32_t row = i * stride;;
+      for (uint32_t j = 0; j < data->GetSize().width * 4; j += 4) {
+        printf_stderr("(%u, %u, %u, %u) ",
+                      map.mData[row + j],
+                      map.mData[row + j + 1],
+                      map.mData[row + j + 2],
+                      map.mData[row + j + 3]);
+      }
+      printf_stderr("\n");
+    }
+
+    data->Unmap();
+  
+    printf_stderr("\n\nCPU Surface\n");
+    data = cpuSurface->GetDataSurface();
+    data->Map(DataSourceSurface::MapType::READ, &map);
+  
+    stride = map.mStride;
+    height = data->GetSize().height;
+  
+    for (uint32_t i = 0; i < height; i++) {
+      uint32_t row = i * stride;
+      for (uint32_t j = 0; j < data->GetSize().width; j++) {
+        printf_stderr("%u ", map.mData[row + j]);
+      }
+      printf_stderr("\n");
+    }
+  
+    data->Unmap();
+  
+    printf_stderr("\n\nD2D Luma Surface\n");
+    data = d2dSurface->GetDataSurface();
+    data->Map(DataSourceSurface::MapType::READ, &map);
+  
+    stride = map.mStride;
+    height = data->GetSize().height;
+  
+    for (uint32_t i = 0; i < height; i++) {
+      uint32_t row = i * stride;
+      for (uint32_t j = 0; j < data->GetSize().width; j++) {
+        printf_stderr("%u ", map.mData[row + j]);
+      }
+      printf_stderr("\n");
+    }
+  
+    data->Unmap();
+  }
+
+  return d2dSurface.forget();
 }
 
 // Command lists are kept around by device contexts until EndDraw is called,
