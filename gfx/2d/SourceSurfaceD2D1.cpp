@@ -99,12 +99,15 @@ SourceSurfaceD2D1::EnsureRealizedBitmap()
   props.pixelFormat = D2DPixelFormat(mFormat);
   props.colorContext = nullptr;
   props.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
-  mDC->CreateBitmap(D2DIntSize(mSize), nullptr, 0, props, (ID2D1Bitmap1**)getter_AddRefs(mRealizedBitmap));
+  hr = mDC->CreateBitmap(D2DIntSize(mSize), nullptr, 0, props, (ID2D1Bitmap1**)getter_AddRefs(mRealizedBitmap));
+  MOZ_ASSERT(hr == S_OK);
 
   RefPtr<ID2D1Image> oldTarget;
   mDC->GetTarget(getter_AddRefs(oldTarget));
 
   mDC->SetTarget(mRealizedBitmap);
+  hr = mDC->EndDraw();
+  MOZ_ASSERT(hr==S_OK);
 
   mDC->BeginDraw();
   mDC->DrawImage(mImage);
