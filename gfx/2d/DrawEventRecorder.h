@@ -21,9 +21,8 @@ class PathRecording;
 class DrawEventRecorderPrivate : public DrawEventRecorder
 {
 public:
-  MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(DrawEventRecorderPrivate)
   DrawEventRecorderPrivate();
-  virtual ~DrawEventRecorderPrivate() { }
+  
   virtual void Finish() {
     // The iteration is a bit awkward here because our iterator will
     // be invalidated by the removal
@@ -82,6 +81,7 @@ public:
 
 protected:
   virtual void Flush() = 0;
+  virtual ~DrawEventRecorderPrivate() { }
 
   std::unordered_set<const void*> mStoredObjects;
   std::unordered_set<uint64_t> mStoredFontData;

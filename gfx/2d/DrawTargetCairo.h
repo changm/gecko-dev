@@ -52,12 +52,11 @@ class GradientStopsCairo : public GradientStops
 class DrawTargetCairo final : public DrawTarget
 {
 public:
-  MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(DrawTargetCairo, override)
   friend class BorrowedCairoContext;
   friend class BorrowedXlibDrawable;
 
   DrawTargetCairo();
-  virtual ~DrawTargetCairo();
+  
 
   virtual bool IsValid() const override;
   virtual DrawTargetType GetType() const override;
@@ -227,6 +226,9 @@ private: // methods
   // font state.
   void SetFontOptions();
 
+protected:
+  virtual ~DrawTargetCairo();
+  
 private: // data
   cairo_t* mContext;
   cairo_surface_t* mSurface;

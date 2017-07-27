@@ -16,7 +16,6 @@ namespace gfx {
 class DrawTargetWrapAndRecord : public DrawTarget
 {
 public:
-  MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(DrawTargetWrapAndRecord, override)
   DrawTargetWrapAndRecord(DrawEventRecorder *aRecorder, DrawTarget *aDT, bool aHasData = false);
 
   ~DrawTargetWrapAndRecord();

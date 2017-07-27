@@ -30,9 +30,8 @@ const int32_t kLayerCacheSize1 = 5;
 class DrawTargetD2D1 : public DrawTarget
 {
 public:
-  MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(DrawTargetD2D1, override)
   DrawTargetD2D1();
-  virtual ~DrawTargetD2D1();
+  
 
   virtual DrawTargetType GetType() const override { return DrawTargetType::HARDWARE_RASTER; }
   virtual BackendType GetBackendType() const override { return BackendType::DIRECT2D1_1; }
@@ -300,6 +299,9 @@ private:
   // List of effects we use
   bool EnsureLuminanceEffect();
   RefPtr<ID2D1Effect> mLuminanceEffect;
+
+protected:
+  virtual ~DrawTargetD2D1();
 };
 
 }

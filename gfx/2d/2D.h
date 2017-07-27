@@ -882,13 +882,15 @@ class DrawTargetCapture;
  * may be used either through a Snapshot or by flushing the target and directly
  * accessing the backing store a DrawTarget was created with.
  */
-class DrawTarget : public RefCounted<DrawTarget>
+class DrawTarget
 {
 public:
-  MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(DrawTarget)
+  //MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(DrawTarget)
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(DrawTarget)
   DrawTarget() : mTransformDirty(false), mPermitSubpixelAA(false) {}
-  virtual ~DrawTarget() {}
-
+  
+  // mRefCnt defined in the threadsafe macro.
+  nsrefcnt refCount() { return mRefCnt.get(); }
   virtual bool IsValid() const { return true; };
   virtual DrawTargetType GetType() const = 0;
 
@@ -1394,6 +1396,8 @@ public:
 #endif
 
 protected:
+  virtual ~DrawTarget() {}
+
   UserData mUserData;
   Matrix mTransform;
   IntRect mOpaqueRect;
@@ -1424,6 +1428,8 @@ public:
   MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(DrawEventRecorder)
   virtual void Finish() = 0;
   virtual ~DrawEventRecorder() { }
+
+protected:
 };
 
 struct Tile

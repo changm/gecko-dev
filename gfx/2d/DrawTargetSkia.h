@@ -29,9 +29,8 @@ class BorrowedCGContext;
 class DrawTargetSkia : public DrawTarget
 {
 public:
-  MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(DrawTargetSkia, override)
   DrawTargetSkia();
-  virtual ~DrawTargetSkia();
+  
 
   virtual DrawTargetType GetType() const override;
   virtual BackendType GetBackendType() const override { return BackendType::SKIA; }
@@ -158,6 +157,9 @@ public:
     return stream.str();
   }
 
+protected:
+  virtual ~DrawTargetSkia();
+  
 private:
   friend class SourceSurfaceSkia;
   void SnapshotDestroyed();

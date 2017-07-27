@@ -16,10 +16,9 @@ namespace gfx {
 class DrawTargetRecording : public DrawTarget
 {
 public:
-  MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(DrawTargetRecording, override)
   DrawTargetRecording(DrawEventRecorder *aRecorder, DrawTarget *aDT, IntSize aSize, bool aHasData = false);
 
-  ~DrawTargetRecording();
+  
 
   virtual DrawTargetType GetType() const override { return mFinalDT->GetType(); }
   virtual BackendType GetBackendType() const override { return BackendType::RECORDING; }
@@ -312,6 +311,9 @@ public:
     return mFinalDT->IsCurrentGroupOpaque();
   }
 
+protected:
+  virtual ~DrawTargetRecording();
+  
 private:
   /**
    * Used for creating a DrawTargetRecording for a CreateSimilarDrawTarget call.
