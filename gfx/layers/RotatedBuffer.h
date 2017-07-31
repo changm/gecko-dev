@@ -22,11 +22,9 @@
 namespace mozilla {
 namespace layers {
 
-typedef bool (*PrepDrawTargetForPaintingCallback)(gfx::DrawTarget* aTarget,
-                                                  gfx::DrawTarget* aWhiteTarget,
-                                                  nsIntRegion aRegionToDraw,
-                                                  SurfaceMode aSurfaceMode,
-                                                  gfxContentType aContentType);
+class CapturedPaintState;
+
+typedef bool (*PrepDrawTargetForPaintingCallback)(CapturedPaintState*);
 
 class TextureClient;
 class PaintedLayer;
@@ -306,11 +304,7 @@ public:
                         DrawIterator* aIter,
                         gfx::BackendType aBackendType);
 
-  static bool PrepareDrawTargetForPainting(gfx::DrawTarget*,
-                                           gfx::DrawTarget*,
-                                           nsIntRegion aRegionToDraw,
-                                           SurfaceMode aSurfaceMode,
-                                           ContentType aContentType);
+  static bool PrepareDrawTargetForPainting(CapturedPaintState*);
   enum {
     BUFFER_COMPONENT_ALPHA = 0x02 // Dual buffers should be created for drawing with
                                   // component alpha.

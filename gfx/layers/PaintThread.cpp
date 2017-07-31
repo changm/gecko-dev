@@ -113,32 +113,24 @@ PaintThread::IsOnPaintThread()
 void
 PaintThread::PaintContentsAsync(CompositorBridgeChild* aBridge,
                                 gfx::DrawTargetCapture* aCapture,
-                                gfx::DrawTarget* aTarget,
                                 Matrix aBorrowedTransform,
-                                nsIntRegion aRegionToDraw,
-                                SurfaceMode aSurfaceMode,
-                                gfxContentType aContentType,
+                                CapturedPaintState* aState,
                                 PrepDrawTargetForPaintingCallback aCallback)
 {
   MOZ_ASSERT(IsOnPaintThread());
-  MOZ_ASSERT(aTarget);
   MOZ_ASSERT(aCapture);
+  DrawTarget* target = aState->mTarget;
 
-  Matrix oldTransform = aTarget->GetTransform();
-  aTarget->SetTransform(aBorrowedTransform);
+  Matrix oldTransform = target->GetTransform();
+  target->SetTransform(aBorrowedTransform);
 
-  // TODO: Support Component alpha
-  // This previously worked with sync OMTP since we'd pass in DT Dual
-  // But we need to pull out the white target to support component alpha.
-  gfx::DrawTarget* whiteTarget = nullptr;
-  if (!aCallback(aTarget, whiteTarget, aRegionToDraw, aSurfaceMode, aContentType)) {
+  if (!aCallback(aState)) {
     return;
   }
 
   // Draw all the things into the actual dest target.
-  aTarget->DrawCapturedDT(aCapture, Matrix());
-
-  aTarget->SetTransform(oldTransform);
+  target->DrawCapturedDT(aCapture, Matrix());
+  target->SetTransform(oldTransform);
 
   // Textureclient forces a flush once we "end paint", so
   // users of this texture expect all the drawing to be complete.
@@ -146,7 +138,7 @@ PaintThread::PaintContentsAsync(CompositorBridgeChild* aBridge,
   // TODO: This might be a performance bottleneck because
   // main thread painting only does one flush at the end of all paints
   // whereas we force a flush after each draw target paint.
-  aTarget->Flush();
+  target->Flush();
 
   if (aBridge) {
     aBridge->NotifyFinishedAsyncPaint();
@@ -155,11 +147,8 @@ PaintThread::PaintContentsAsync(CompositorBridgeChild* aBridge,
 
 void
 PaintThread::PaintContents(DrawTargetCapture* aCapture,
-                           DrawTarget* aTarget,
                            Matrix aBorrowedTransform,
-                           nsIntRegion aRegionToDraw,
-                           SurfaceMode aSurfaceMode,
-                           gfxContentType aContentType,
+                           CapturedPaintState* aState,
                            PrepDrawTargetForPaintingCallback aCallback)
 {
   MOZ_ASSERT(NS_IsMainThread());
@@ -173,18 +162,14 @@ PaintThread::PaintContents(DrawTargetCapture* aCapture,
     cbc->NotifyBeginAsyncPaint();
   }
   RefPtr<DrawTargetCapture> capture(aCapture);
-  RefPtr<DrawTarget> target(aTarget);
 
   RefPtr<PaintThread> self = this;
   RefPtr<Runnable> task = NS_NewRunnableFunction("PaintThread::PaintContents",
-    [self, cbc, capture, target, aBorrowedTransform,
-     aRegionToDraw, aSurfaceMode, aContentType, aCallback]() -> void
+    [self, cbc, capture, aBorrowedTransform, aState, aCallback]() -> void
   {
-    self->PaintContentsAsync(cbc, capture, target,
+    self->PaintContentsAsync(cbc, capture,
                             aBorrowedTransform,
-                            aRegionToDraw,
-                            aSurfaceMode,
-                            aContentType,
+                            aState,
                             aCallback);
   });
 

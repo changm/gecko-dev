@@ -225,6 +225,7 @@ ClientPaintedLayer::PaintOffMainThread()
   Matrix borrowedTransform;
   nsIntRegion regionToDraw;
   RefPtr<DrawTargetCapture> captureDT;
+  RefPtr<CapturedPaintState> capturedState;
 
   // Debug Protip: Change to BorrowDrawTargetForPainting if using sync OMTP.
   while (DrawTarget* target = mContentClient->BorrowDrawTargetForRecording(state, &iter)) {
@@ -263,9 +264,14 @@ ClientPaintedLayer::PaintOffMainThread()
     ctx = nullptr;
     count += 1;
 
+    capturedState = MakeAndAddRef<CapturedPaintState>(state.mRegionToDraw,
+                                                      target, nullptr,
+                                                      state.mMode,
+                                                      state.mContentType);
+
     if (gfxPrefs::LayersOMTPForceSync()) {
-      PaintThread::Get()->PaintContents(captureDT, target, borrowedTransform,
-                                        regionToDraw, state.mMode,  state.mContentType,
+      PaintThread::Get()->PaintContents(captureDT, borrowedTransform,
+                                        capturedState,
                                         RotatedContentBuffer::PrepareDrawTargetForPainting);
     }
 
@@ -279,8 +285,8 @@ ClientPaintedLayer::PaintOffMainThread()
 
   // TODO: Fixup after TextureClients are held together.
   if (heldTarget && count && !gfxPrefs::LayersOMTPForceSync()) {
-    PaintThread::Get()->PaintContents(captureDT, heldTarget, borrowedTransform,
-                                      regionToDraw, state.mMode,  state.mContentType,
+    PaintThread::Get()->PaintContents(captureDT, borrowedTransform,
+                                      capturedState,
                                       RotatedContentBuffer::PrepareDrawTargetForPainting);
   }
 
