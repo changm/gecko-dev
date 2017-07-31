@@ -20,6 +20,13 @@ class DrawTargetCapture;
 
 namespace layers {
 
+typedef bool (*PrepDrawTargetForPaintingCallback)(gfx::DrawTarget* aTarget,
+                                                  gfx::DrawTarget* aWhiteTarget,
+                                                  nsIntRegion aRegionToDraw,
+                                                  SurfaceMode aSurfaceMode,
+                                                  gfxContentType aContentType);
+
+
 class CompositorBridgeChild;
 
 class PaintThread final
@@ -31,7 +38,12 @@ public:
   static void Shutdown();
   static PaintThread* Get();
   void PaintContents(gfx::DrawTargetCapture* aCapture,
-                     gfx::DrawTarget* aTarget);
+                     gfx::DrawTarget* aTarget,
+                     gfx::Matrix aBorrowedTransform,
+                     nsIntRegion aRegionToDraw,
+                     SurfaceMode aSurfaceMode,
+                     gfxContentType aContentType,
+                     PrepDrawTargetForPaintingCallback aCallback);
 
   // Sync Runnables need threads to be ref counted,
   // But this thread lives through the whole process.
@@ -49,7 +61,12 @@ private:
   void InitOnPaintThread();
   void PaintContentsAsync(CompositorBridgeChild* aBridge,
                           gfx::DrawTargetCapture* aCapture,
-                          gfx::DrawTarget* aTarget);
+                          gfx::DrawTarget* aTarget,
+                          gfx::Matrix aBorrowedTransform,
+                          nsIntRegion aRegionToDraw,
+                          SurfaceMode aSurfaceMode,
+                          gfxContentType aContentType,
+                          PrepDrawTargetForPaintingCallback aCallback);
 
   static StaticAutoPtr<PaintThread> sSingleton;
   static StaticRefPtr<nsIThread> sThread;
