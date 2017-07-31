@@ -237,9 +237,12 @@ ClientPaintedLayer::PaintOffMainThread()
 
     regionToDraw = iter.mDrawRegion;
 
+    
+    captureDT = Factory::CreateCaptureDrawTarget(target->GetBackendType(),
+                                                 target->GetSize(),
+                                                 target->GetFormat());
     captureDT->SetTransform(target->GetTransform());
-    //RefPtr<DrawTargetCapture> captureDT = refDT->CreateCaptureDT(target->GetSize());
-    captureDT = refDT->CreateCaptureDT(target->GetSize());
+
     borrowedTransform = target->GetTransform();
     captureDT->SetTransform(borrowedTransform);
 
