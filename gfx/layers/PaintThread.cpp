@@ -113,16 +113,17 @@ PaintThread::IsOnPaintThread()
 void
 PaintThread::PaintContentsAsync(CompositorBridgeChild* aBridge,
                                 gfx::DrawTargetCapture* aCapture,
-                                Matrix aBorrowedTransform,
                                 CapturedPaintState* aState,
                                 PrepDrawTargetForPaintingCallback aCallback)
 {
   MOZ_ASSERT(IsOnPaintThread());
   MOZ_ASSERT(aCapture);
+  MOZ_ASSERT(aState);
+
   DrawTarget* target = aState->mTarget;
 
   Matrix oldTransform = target->GetTransform();
-  target->SetTransform(aBorrowedTransform);
+  target->SetTransform(aState->mTargetTransform);
 
   if (!aCallback(aState)) {
     return;
@@ -147,7 +148,6 @@ PaintThread::PaintContentsAsync(CompositorBridgeChild* aBridge,
 
 void
 PaintThread::PaintContents(DrawTargetCapture* aCapture,
-                           Matrix aBorrowedTransform,
                            CapturedPaintState* aState,
                            PrepDrawTargetForPaintingCallback aCallback)
 {
@@ -165,10 +165,9 @@ PaintThread::PaintContents(DrawTargetCapture* aCapture,
 
   RefPtr<PaintThread> self = this;
   RefPtr<Runnable> task = NS_NewRunnableFunction("PaintThread::PaintContents",
-    [self, cbc, capture, aBorrowedTransform, aState, aCallback]() -> void
+    [self, cbc, capture, aState, aCallback]() -> void
   {
     self->PaintContentsAsync(cbc, capture,
-                            aBorrowedTransform,
                             aState,
                             aCallback);
   });

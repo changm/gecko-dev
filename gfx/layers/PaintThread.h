@@ -30,11 +30,13 @@ public:
   CapturedPaintState(nsIntRegion& aRegionToDraw,
                      gfx::DrawTarget* aTarget,
                      gfx::DrawTarget* aTargetOnWhite,
+                     gfx::Matrix aTargetTransform,
                      SurfaceMode aSurfaceMode,
                      gfxContentType aContentType)
   : mRegionToDraw(aRegionToDraw)
   , mTarget(aTarget)
   , mTargetOnWhite(aTargetOnWhite)
+  , mTargetTransform(aTargetTransform)
   , mSurfaceMode(aSurfaceMode)
   , mContentType(aContentType)
   {}
@@ -42,6 +44,7 @@ public:
   nsIntRegion mRegionToDraw;
   RefPtr<gfx::DrawTarget> mTarget;
   RefPtr<gfx::DrawTarget> mTargetOnWhite;
+  gfx::Matrix mTargetTransform;
   SurfaceMode mSurfaceMode;
   gfxContentType mContentType;
 
@@ -62,7 +65,6 @@ public:
   static void Shutdown();
   static PaintThread* Get();
   void PaintContents(gfx::DrawTargetCapture* aCapture,
-                     gfx::Matrix aBorrowedTransform,
                      CapturedPaintState* aState,
                      PrepDrawTargetForPaintingCallback aCallback);
 
@@ -82,7 +84,6 @@ private:
   void InitOnPaintThread();
   void PaintContentsAsync(CompositorBridgeChild* aBridge,
                           gfx::DrawTargetCapture* aCapture,
-                          gfx::Matrix aBorrowedTransform,
                           CapturedPaintState* aState,
                           PrepDrawTargetForPaintingCallback aCallback);
 

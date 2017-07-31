@@ -266,11 +266,12 @@ ClientPaintedLayer::PaintOffMainThread()
 
     capturedState = MakeAndAddRef<CapturedPaintState>(state.mRegionToDraw,
                                                       target, nullptr,
+                                                      borrowedTransform,
                                                       state.mMode,
                                                       state.mContentType);
 
     if (gfxPrefs::LayersOMTPForceSync()) {
-      PaintThread::Get()->PaintContents(captureDT, borrowedTransform,
+      PaintThread::Get()->PaintContents(captureDT,
                                         capturedState,
                                         RotatedContentBuffer::PrepareDrawTargetForPainting);
     }
@@ -285,7 +286,7 @@ ClientPaintedLayer::PaintOffMainThread()
 
   // TODO: Fixup after TextureClients are held together.
   if (heldTarget && count && !gfxPrefs::LayersOMTPForceSync()) {
-    PaintThread::Get()->PaintContents(captureDT, borrowedTransform,
+    PaintThread::Get()->PaintContents(captureDT,
                                       capturedState,
                                       RotatedContentBuffer::PrepareDrawTargetForPainting);
   }

@@ -749,7 +749,7 @@ RotatedContentBuffer::BorrowDrawTargetForRecording(PaintState& aPaintState,
   return result;
 }
 
-/*static */ bool 
+/*static */ bool
 RotatedContentBuffer::PrepareDrawTargetForPainting(CapturedPaintState* aState)
 {
   RefPtr<DrawTarget> target = aState->mTarget;
@@ -821,9 +821,10 @@ RotatedContentBuffer::BorrowDrawTargetForPainting(PaintState& aPaintState,
     MakeAndAddRef<CapturedPaintState>(aPaintState.mRegionToDraw,
                                       mDTBuffer,
                                       mDTBufferOnWhite,
+                                      Matrix(),
                                       aPaintState.mMode,
                                       aPaintState.mContentType);
-      
+
   if (!RotatedContentBuffer::PrepareDrawTargetForPainting(capturedPaintState)) {
     return nullptr;
   }
