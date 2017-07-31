@@ -152,6 +152,8 @@ PaintThread::PaintContents(DrawTargetCapture* aCapture,
                            PrepDrawTargetForPaintingCallback aCallback)
 {
   MOZ_ASSERT(NS_IsMainThread());
+  MOZ_ASSERT(aCapture);
+  MOZ_ASSERT(aState);
 
   // If painting asynchronously, we need to acquire the compositor bridge which
   // owns the underlying MessageChannel. Otherwise we leave it null and use
