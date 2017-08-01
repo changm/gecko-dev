@@ -23,10 +23,9 @@ namespace layers {
 
 // Holds the key parts from a RotatedBuffer::PaintState
 // required to draw the captured paint state
-class  CapturedPaintState {
-public:
+class CapturedPaintState {
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(CapturedPaintState)
-
+public:
   CapturedPaintState(nsIntRegion& aRegionToDraw,
                      gfx::DrawTarget* aTarget,
                      gfx::DrawTarget* aTargetOnWhite,

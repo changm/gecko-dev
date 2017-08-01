@@ -817,6 +817,7 @@ RotatedContentBuffer::BorrowDrawTargetForPainting(PaintState& aPaintState,
   }
 
   ExpandDrawRegion(aPaintState, aIter, result->GetBackendType());
+  // Can't stack allocate refcounted objects.
   RefPtr<CapturedPaintState> capturedPaintState =
     MakeAndAddRef<CapturedPaintState>(aPaintState.mRegionToDraw,
                                       mDTBuffer,

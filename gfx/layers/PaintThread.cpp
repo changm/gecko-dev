@@ -170,8 +170,8 @@ PaintThread::PaintContents(DrawTargetCapture* aCapture,
     [self, cbc, capture, aState, aCallback]() -> void
   {
     self->PaintContentsAsync(cbc, capture,
-                            aState,
-                            aCallback);
+                             aState,
+                             aCallback);
   });
 
   if (cbc) {
