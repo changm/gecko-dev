@@ -769,7 +769,7 @@ RotatedContentBuffer::PrepareDrawTargetForPainting(CapturedPaintState* aState)
 
   if (aState->mSurfaceMode == SurfaceMode::SURFACE_COMPONENT_ALPHA) {
     if (!target || !target->IsValid() ||
-        !aState->mTargetOnWhite || !aState->mTargetOnWhite->IsValid()) {
+        !whiteTarget || !whiteTarget->IsValid()) {
       // This can happen in release builds if allocating one of the two buffers
       // failed. This in turn can happen if unreasonably large textures are
       // requested.

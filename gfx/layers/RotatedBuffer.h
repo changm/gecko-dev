@@ -386,7 +386,6 @@ protected:
    * ReturnDrawTarget will by default restore the transform on the draw target.
    * But it is the callers responsibility to restore the clip.
    * The caller should flush the draw target, if necessary.
-   * 
    */
   gfx::DrawTarget*
   BorrowDrawTargetForQuadrantUpdate(const gfx::IntRect& aBounds,
