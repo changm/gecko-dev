@@ -1228,7 +1228,7 @@ DrawTargetD2D1::factory()
 #else
   options.debugLevel = D2D1_DEBUG_LEVEL_NONE;
 #endif
-  //options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+  options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 
   HRESULT hr = createD2DFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,
                                 __uuidof(ID2D1Factory),

@@ -805,7 +805,25 @@ MLGDeviceD3D11::Initialize()
     } else {
       gfxCriticalNote << "Failed to query D3D11.1 feature support: " << hexa(hr);
     }
+
+    D3D11_FEATURE_DATA_THREADING threadingOptions;
+    hr = mDevice->CheckFeatureSupport(
+      D3D11_FEATURE_THREADING,
+      &threadingOptions,
+      sizeof(threadingOptions));
+    MOZ_ASSERT(hr == S_OK);
+    printf_stderr("Feature support concurrent creates: %d, command lists: %d\n",
+      threadingOptions.DriverConcurrentCreates, threadingOptions.DriverCommandLists);
   }
+
+  D3D11_FEATURE_DATA_THREADING threadingOptions;
+  HRESULT hr = mDevice->CheckFeatureSupport(
+      D3D11_FEATURE_THREADING,
+      &threadingOptions,
+      sizeof(threadingOptions));
+  MOZ_ASSERT(hr == S_OK);
+  printf_stderr("Feature support concurrent creates: %d, command lists: %d\n",
+    threadingOptions.DriverConcurrentCreates, threadingOptions.DriverCommandLists);
 
   // Get capabilities.
   switch (mDevice->GetFeatureLevel()) {
