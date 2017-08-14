@@ -31,6 +31,8 @@ DrawTargetCaptureImpl::DrawTargetCaptureImpl(BackendType aBackend,
   RefPtr<DrawTarget> screenRefDT =
       gfxPlatform::GetPlatform()->ScreenReferenceDrawTarget();
 
+  mFormat = aFormat;
+
   if (aBackend == screenRefDT->GetBackendType()) {
     mRefDT = screenRefDT;
   } else {
@@ -44,8 +46,6 @@ DrawTargetCaptureImpl::DrawTargetCaptureImpl(BackendType aBackend,
     IntSize size(1, 1);
     mRefDT = Factory::CreateDrawTarget(aBackend, size, mFormat);
   }
-
-  mFormat = aFormat;
 }
 
 bool
